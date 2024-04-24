@@ -19,19 +19,19 @@ axios.interceptors.response.use(async response => {
     const { data, status, config } = error.response as AxiosResponse;
     switch (status) {
         case 400:
-            if (config.method === "get" && Object.prototype.hasOwnProperty.call(data.errors, "id")) {
-                router.navigate("/not-found")
-            }
-            if (data.errors) {
-                const modelStateErrors = [];
-                for (const key in data.errors) {
-                    if (data.errors[key]) {
-                        modelStateErrors.push(data.errors[key])
+            if (!data.errors) toast.error(data);
+            else {
+                if (config.method === "get" && Object.prototype.hasOwnProperty.call(data.errors, "id")) {
+                    router.navigate("/not-found")
+                } else {
+                    const modelStateErrors = [];
+                    for (const key in data.errors) {
+                        if (data.errors[key]) {
+                            modelStateErrors.push(data.errors[key])
+                        }
                     }
+                    throw modelStateErrors.flat();
                 }
-                throw modelStateErrors.flat();
-            } else {
-                toast.error(data);
             }
             break;
         case 401:

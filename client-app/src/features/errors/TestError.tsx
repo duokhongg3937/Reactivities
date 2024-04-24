@@ -12,7 +12,7 @@ export default function TestErrors() {
     }
 
     function handleBadRequest() {
-        axios.get(baseUrl + "buggy/bad-request").catch((err) => console.log(err.response));
+        axios.get(baseUrl + "buggy/bad-request").catch((err) => console.log(err));
     }
 
     function handleServerError() {
