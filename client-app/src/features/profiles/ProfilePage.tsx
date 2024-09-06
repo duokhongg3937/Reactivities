@@ -8,16 +8,14 @@ import { useEffect } from "react";
 import LoadingComponent from "../../app/layout/LoadingComponent";
 
 export default observer(function ProfilePage() {
-	const { username } = useParams();
+	const { username } = useParams<{ username: string }>();
 	const { profileStore } = useStore();
 	const { loadingProfile, loadProfile, profile, setActiveTab } = profileStore;
 
 	useEffect(() => {
-		if (username) {
-			loadProfile(username);
-		}
+		loadProfile(username!);
 		return () => {
-			setActiveTab(0);
+			// setActiveTab(0);
 		};
 	}, [loadProfile, username, setActiveTab]);
 

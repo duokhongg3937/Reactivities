@@ -27,7 +27,7 @@ export default observer(function ProfileContent({ profile }: Props) {
 			menu={{ fluid: true, vertical: true }}
 			menuPosition="right"
 			panes={panes}
-			onTabChange={(_, data) => profileStore.setActiveTab(data.activeIndex)}
+			onTabChange={(_, data) => profileStore.setActiveTab(data.activeIndex as number)}
 		/>
 	);
 });
