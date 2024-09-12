@@ -4,62 +4,72 @@
 name: Build and deploy ASP.Net Core app to Azure Web App - duokhongg-reactivities
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: windows-latest
+    build:
+        runs-on: windows-latest
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.x'
+            - name: Set up NodeJS
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "20"
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+            - name: Install deps and build react app
+              run: |
+                  cd client-app
+                  npm install
+                  npm run build
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}\myapp"
+            - name: Set up .NET Core
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: "8.x"
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+            - name: Build with dotnet
+              run: dotnet build --configuration Release
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
+            - name: dotnet publish
+              run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}\myapp"
 
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_81AB86604C274C0EBC8B1381B1AA51E4 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C3B211361EE64BC4A47A0B4117FD4265 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BBCCCE38F6C04EB7AD0927470F172E25 }}
+            - name: Upload artifact for deployment job
+              uses: actions/upload-artifact@v4
+              with:
+                  name: .net-app
+                  path: ${{env.DOTNET_ROOT}}/myapp
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'duokhongg-reactivities'
-          slot-name: 'Production'
-          package: .
-          
+    deploy:
+        runs-on: windows-latest
+        needs: build
+        environment:
+            name: "Production"
+            url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+        permissions:
+            id-token: write #This is required for requesting the JWT
+
+        steps:
+            - name: Download artifact from build job
+              uses: actions/download-artifact@v4
+              with:
+                  name: .net-app
+
+            - name: Login to Azure
+              uses: azure/login@v2
+              with:
+                  client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_81AB86604C274C0EBC8B1381B1AA51E4 }}
+                  tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C3B211361EE64BC4A47A0B4117FD4265 }}
+                  subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BBCCCE38F6C04EB7AD0927470F172E25 }}
+
+            - name: Deploy to Azure Web App
+              id: deploy-to-webapp
+              uses: azure/webapps-deploy@v3
+              with:
+                  app-name: "duokhongg-reactivities"
+                  slot-name: "Production"
+                  package: .
